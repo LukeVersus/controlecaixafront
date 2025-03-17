@@ -18,19 +18,24 @@ export const Form = () => {
     e.preventDefault()
     setIsLoading(true)
     setError('')
+    const login = {
+      username: username,
+      password: password
+    };
 
     try {
-      const response = await fetch('http://localhost:8081/api/login', {
+      const response = await fetch('/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify(login)
       })
 
       if (response.ok) {
         const data = await response.json()
-        localStorage.setItem('token', data.token)
+        localStorage.setItem('token', data.jwtToken)
         router.push('/dashboard')
       } else {
         setError('Credenciais inválidas')
