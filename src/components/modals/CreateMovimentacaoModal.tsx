@@ -123,7 +123,7 @@ export function CreateMovimentacaoModal({
               id="descricao"
               value={descricao}
               onChange={(e) => setDescricao(e.target.value)}
-              placeholder="Digite a descrição"
+              placeholder="Descrição"
               className="w-full px-4 py-3 text-base text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
               required
             />

@@ -1,14 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { MonthSelector } from '@/components/dashboard/MonthSelector'
 import { AccountSelector } from '@/components/dashboard/AccountSelector'
+import { MonthSelector } from '@/components/dashboard/MonthSelector'
 import { MonthSummary } from '@/components/dashboard/MonthSummary'
 import { GeneralBalance } from '@/components/dashboard/GeneralBalance'
 import { TransactionList } from '@/components/dashboard/TransactionList'
 import { CreateCaixaModal } from '@/components/modals/CreateCaixaModal'
 import { CreateMovimentacaoModal } from '@/components/modals/CreateMovimentacaoModal'
-import { useRouter } from 'next/navigation'
 
 interface Caixa {
   id: number
@@ -16,63 +15,82 @@ interface Caixa {
   saldoInicial: number
 }
 
+const months = [
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+]
+
 export default function DashboardPage() {
-  const router = useRouter()
-  const [selectedYear, setSelectedYear] = useState('2024')
-  const [selectedMonth, setSelectedMonth] = useState('Janeiro')
+  const currentYear = new Date().getFullYear()
+  const currentMonth = (new Date().getMonth() + 1).toString()
+  
+  const [selectedYear, setSelectedYear] = useState<string>(currentYear.toString())
+  const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth)
   const [selectedAccount, setSelectedAccount] = useState('')
   const [selectedCaixa, setSelectedCaixa] = useState<Caixa | null>(null)
   const [isCreateCaixaModalOpen, setIsCreateCaixaModalOpen] = useState(false)
   const [isCreateMovimentacaoModalOpen, setIsCreateMovimentacaoModalOpen] = useState(false)
 
   useEffect(() => {
-    // Verificar se o usuário está autenticado
     const token = localStorage.getItem('token')
     if (!token) {
-      router.push('/login')
+      window.location.href = '/login'
     }
-  }, [router])
+  }, [])
 
   const handleCreateCaixaSuccess = () => {
-    // Força o AccountSelector a recarregar as caixas
-    setSelectedAccount('')
+    setIsCreateCaixaModalOpen(false)
+    setSelectedCaixa(null)
   }
 
   const handleCreateMovimentacaoSuccess = () => {
-    // Aqui você pode atualizar a lista de movimentações
+    setIsCreateMovimentacaoModalOpen(false)
+  }
+
+  const handleAccountChange = (account: string, caixa: Caixa | null) => {
+    setSelectedAccount(account)
+    setSelectedCaixa(caixa)
   }
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-7xl mx-auto">
+        <div className="mb-6 border rounded-md p-2 bg-white">
+          <MonthSelector
+            selectedYear={selectedYear}
+            selectedMonth={selectedMonth}
+            onYearChange={setSelectedYear}
+            onMonthChange={setSelectedMonth}
+          />
+        </div>
+
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-4">
-            <MonthSelector 
-              selectedYear={selectedYear}
-              selectedMonth={selectedMonth}
-              onYearChange={setSelectedYear}
-              onMonthChange={setSelectedMonth}
-            />
-            <AccountSelector
-              selectedAccount={selectedAccount}
-              onAccountChange={(account: string, caixa?: Caixa) => {
-                setSelectedAccount(account)
-                setSelectedCaixa(caixa || null)
-              }}
-            />
+            <h1 className="text-2xl font-bold text-gray-900">
+              {months[parseInt(selectedMonth) - 1]}/{selectedYear}
+            </h1>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-600">Caixa</span>
+              <AccountSelector 
+                selectedAccount={selectedAccount}
+                onAccountChange={handleAccountChange}
+              />
+            </div>
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => setIsCreateCaixaModalOpen(true)}
-              className="px-6 py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium text-sm"
+              className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
             >
               + Caixa
             </button>
             <button
               onClick={() => setIsCreateMovimentacaoModalOpen(true)}
+              className={`px-3 py-1 rounded text-sm text-white ${
+                selectedCaixa ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'
+              }`}
               disabled={!selectedCaixa}
-              className="px-6 py-2.5 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              title={!selectedCaixa ? 'Selecione uma caixa primeiro' : ''}
+              title={!selectedCaixa ? 'Selecione um caixa primeiro' : ''}
             >
               + Movimento
             </button>
@@ -80,25 +98,36 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <MonthSummary />
-          <GeneralBalance />
+          <MonthSummary 
+            selectedCaixaId={selectedCaixa?.id ?? null} 
+            selectedYear={parseInt(selectedYear)}
+            selectedMonth={parseInt(selectedMonth)}
+          />
+          <GeneralBalance
+            selectedCaixaId={selectedCaixa?.id ?? null}
+            selectedYear={parseInt(selectedYear)}
+          />
         </div>
 
-        <TransactionList />
-
-        <CreateCaixaModal
-          isOpen={isCreateCaixaModalOpen}
-          onClose={() => setIsCreateCaixaModalOpen(false)}
-          onSuccess={handleCreateCaixaSuccess}
-        />
-
-        <CreateMovimentacaoModal
-          isOpen={isCreateMovimentacaoModalOpen}
-          onClose={() => setIsCreateMovimentacaoModalOpen(false)}
-          onSuccess={handleCreateMovimentacaoSuccess}
-          selectedCaixaId={selectedCaixa?.id || null}
+        <TransactionList 
+          selectedCaixaId={selectedCaixa?.id ?? null}
+          selectedYear={parseInt(selectedYear)}
+          selectedMonth={parseInt(selectedMonth)}
         />
       </div>
+
+      <CreateCaixaModal
+        isOpen={isCreateCaixaModalOpen}
+        onClose={() => setIsCreateCaixaModalOpen(false)}
+        onSuccess={handleCreateCaixaSuccess}
+      />
+
+      <CreateMovimentacaoModal
+        isOpen={isCreateMovimentacaoModalOpen}
+        onClose={() => setIsCreateMovimentacaoModalOpen(false)}
+        onSuccess={handleCreateMovimentacaoSuccess}
+        selectedCaixaId={selectedCaixa?.id ?? null}
+      />
     </div>
   )
 } 

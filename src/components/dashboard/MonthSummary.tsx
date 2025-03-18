@@ -1,20 +1,89 @@
-export function MonthSummary() {
+import { useEffect, useState } from 'react'
+import { api } from '@/services/api'
+
+interface MonthSummaryProps {
+  selectedCaixaId: number | null
+  selectedYear: number
+  selectedMonth: number
+}
+
+interface SummaryData {
+  entradas: number
+  saidas: number
+  saldo: number
+}
+
+export function MonthSummary({ selectedCaixaId, selectedYear, selectedMonth }: MonthSummaryProps) {
+  const [data, setData] = useState<SummaryData>({ entradas: 0, saidas: 0, saldo: 0 })
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!selectedCaixaId) return
+
+      setIsLoading(true)
+      setError('')
+
+      try {
+        const movimentacoes = await api.getMovimentacoesByMes(selectedCaixaId, selectedYear, selectedMonth)
+        
+        const summary = movimentacoes.reduce((acc: SummaryData, mov: any) => {
+          if (mov.tipo === 'ENTRADA') {
+            acc.entradas += mov.valor
+          } else {
+            acc.saidas += mov.valor
+          }
+          return acc
+        }, { entradas: 0, saidas: 0, saldo: 0 })
+
+        summary.saldo = summary.entradas - summary.saidas
+        setData(summary)
+      } catch (err) {
+        setError('Erro ao carregar dados do mês')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [selectedCaixaId, selectedYear, selectedMonth])
+
+  if (isLoading) {
+    return (
+      <div className="p-6 bg-white rounded-lg shadow-md animate-pulse">
+        <div className="h-6 bg-gray-200 rounded w-3/4 mb-6"></div>
+        <div className="space-y-4">
+          <div className="h-4 bg-gray-200 rounded w-full"></div>
+          <div className="h-4 bg-gray-200 rounded w-full"></div>
+          <div className="h-4 bg-gray-200 rounded w-full"></div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-6 text-gray-900">Entradas e Saídas do Mês</h2>
-      <div className="space-y-4">
+    <div className="border rounded-md p-4 bg-white">
+      <h2 className="text-xl font-semibold mb-4 text-gray-800">Entradas e Saídas do Mês</h2>
+      <div className="space-y-3">
         <div className="flex justify-between items-center">
-          <span className="text-gray-700 text-base">Entradas:</span>
-          <span className="text-green-600 font-semibold text-lg">R$ 6.000,00</span>
+          <span className="text-gray-800 font-medium">Entradas:</span>
+          <span className="text-green-600 font-semibold text-lg">
+            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(data.entradas)}
+          </span>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-gray-700 text-base">Saídas:</span>
-          <span className="text-red-600 font-semibold text-lg">R$ 1.500,00</span>
+          <span className="text-gray-800 font-medium">Saídas:</span>
+          <span className="text-red-600 font-semibold text-lg">
+            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(data.saidas)}
+          </span>
         </div>
-        <div className="border-t border-gray-200 pt-4 mt-4">
+        <div className="border-t border-gray-200 pt-3 mt-3">
           <div className="flex justify-between items-center">
-            <span className="text-gray-900 font-semibold text-base">Saldo:</span>
-            <span className="text-blue-600 font-bold text-xl">R$ 4.500,00</span>
+            <span className="text-gray-900 font-semibold">Saldo:</span>
+            <span className="text-blue-600 font-bold text-xl">
+              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(data.saldo)}
+            </span>
           </div>
         </div>
       </div>

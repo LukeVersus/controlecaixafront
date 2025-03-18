@@ -69,7 +69,7 @@ export function CreateCaixaModal({ isOpen, onClose, onSuccess }: CreateCaixaModa
               id="descricao"
               value={descricao}
               onChange={(e) => setDescricao(e.target.value)}
-              placeholder="Banco do Brasil"
+              placeholder="Descrição"
               className="w-full px-4 py-3 text-base text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
               required
             />
@@ -84,7 +84,7 @@ export function CreateCaixaModal({ isOpen, onClose, onSuccess }: CreateCaixaModa
               id="saldoInicial"
               value={saldoInicial}
               onChange={(e) => setSaldoInicial(Number(e.target.value))}
-              placeholder="5000"
+              placeholder="0"
               className="w-full px-4 py-3 text-base text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
               required
             />

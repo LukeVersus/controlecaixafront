@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 interface MonthSelectorProps {
   selectedYear: string
   selectedMonth: string
@@ -6,28 +8,35 @@ interface MonthSelectorProps {
 }
 
 const months = [
-  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+  { value: '1', label: 'Janeiro' },
+  { value: '2', label: 'Fevereiro' },
+  { value: '3', label: 'Março' },
+  { value: '4', label: 'Abril' },
+  { value: '5', label: 'Maio' },
+  { value: '6', label: 'Junho' },
+  { value: '7', label: 'Julho' },
+  { value: '8', label: 'Agosto' },
+  { value: '9', label: 'Setembro' },
+  { value: '10', label: 'Outubro' },
+  { value: '11', label: 'Novembro' },
+  { value: '12', label: 'Dezembro' }
 ]
 
-export function MonthSelector({
-  selectedYear,
-  selectedMonth,
-  onYearChange,
-  onMonthChange
+export function MonthSelector({ 
+  selectedYear, 
+  selectedMonth, 
+  onYearChange, 
+  onMonthChange 
 }: MonthSelectorProps) {
   const currentYear = new Date().getFullYear()
-  const years = Array.from(
-    { length: 5 },
-    (_, i) => String(currentYear - 2 + i)
-  )
+  const years = Array.from({ length: 5 }, (_, i) => (currentYear - 2 + i).toString())
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-2">
       <select
         value={selectedYear}
         onChange={(e) => onYearChange(e.target.value)}
-        className="border border-gray-300 rounded-md px-4 py-2 bg-white text-gray-900 text-base font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        className="border-none bg-transparent text-blue-600 font-medium focus:outline-none cursor-pointer"
       >
         {years.map((year) => (
           <option key={year} value={year}>
@@ -35,18 +44,18 @@ export function MonthSelector({
           </option>
         ))}
       </select>
-      <div className="flex gap-2 bg-white px-2 py-1 rounded-md shadow-sm">
+      <div className="flex gap-1 text-sm">
         {months.map((month) => (
           <button
-            key={month}
-            onClick={() => onMonthChange(month)}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-              selectedMonth === month
-                ? 'bg-blue-100 text-blue-700'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+            key={month.value}
+            onClick={() => onMonthChange(month.value)}
+            className={`hover:text-blue-600 ${
+              selectedMonth === month.value 
+                ? 'text-blue-600 font-medium' 
+                : 'text-gray-600'
             }`}
           >
-            {month.slice(0, 3)}
+            {month.label.slice(0, 3)} |
           </button>
         ))}
       </div>
